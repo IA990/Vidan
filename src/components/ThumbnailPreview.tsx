@@ -9,6 +9,7 @@ export default function ThumbnailPreview({ user }: { user: any }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [language, setLanguage] = useState('fr');
 
   useEffect(() => {
     const checkKey = async () => {
@@ -17,6 +18,11 @@ export default function ThumbnailPreview({ user }: { user: any }) {
       }
     };
     checkKey();
+    // Auto-detect language
+    const browserLang = navigator.language.split('-')[0];
+    if (['fr', 'en', 'es'].includes(browserLang)) {
+      setLanguage(browserLang);
+    }
   }, []);
 
   const handleSelectKey = async () => {
@@ -52,6 +58,7 @@ export default function ThumbnailPreview({ user }: { user: any }) {
       const fullPrompt = `Tu es l'intelligence artificielle de "Vidan AI", une plateforme experte en stratégie de croissance et optimisation de chaînes YouTube. Ton unique mission est d'aider les créateurs à exploser leur taux de clic (CTR) et leur audience.
 
 Analyse la niche suivante : ${prompt}
+Réponds impérativement en langue : ${language === 'fr' ? 'Français' : language === 'en' ? 'Anglais' : 'Espagnol'}
 
 Génère une réponse au format JSON suivant :
 {
@@ -108,8 +115,19 @@ Génère une réponse au format JSON suivant :
             <ImageIcon className="w-6 h-6 text-red-500" />
             <h3 className="text-xl font-bold">AI Thumbnail Generator</h3>
           </div>
-          <div className="text-sm text-gray-400">
-            Essais restants : {remaining !== null ? remaining : '...'} / 3
+          <div className="flex items-center gap-4">
+            <select 
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="bg-[#0f0f0f] border border-white/10 rounded-lg px-2 py-1 text-sm focus:outline-none"
+            >
+              <option value="fr">FR</option>
+              <option value="en">EN</option>
+              <option value="es">ES</option>
+            </select>
+            <div className="text-sm text-gray-400">
+              Essais restants : {remaining !== null ? remaining : '...'} / 3
+            </div>
           </div>
         </div>
 

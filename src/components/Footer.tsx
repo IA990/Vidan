@@ -9,7 +9,7 @@ interface FooterProps {
 
 export default function Footer({ onShowLegal, onShowPrivacy, onNavigate }: FooterProps) {
   return (
-    <footer className="bg-black py-16 px-4 border-t border-white/10">
+    <footer className="bg-black py-16 px-4 border-t border-white/10 font-bold text-black">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-white">Vidan AI</h3>
