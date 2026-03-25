@@ -30,10 +30,11 @@ export default function ThumbnailPreview({ user }: { user: any }) {
     if (!prompt) return;
     setLoading(true);
     try {
+      // 1. Check usage limit
       const response = await fetch('/api/generate-strategy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: `YouTube thumbnail for: ${prompt}` }),
+        body: JSON.stringify({ prompt: prompt }),
       });
       
       if (response.status === 429) {
@@ -41,18 +42,47 @@ export default function ThumbnailPreview({ user }: { user: any }) {
         return;
       }
       
-      if (!response.ok) throw new Error('Failed to generate');
+      if (!response.ok) throw new Error('Failed to check usage limit');
       
       const data = await response.json();
       setRemaining(data.remaining);
-      // Note: The backend should return the image or the image generation logic should be moved to backend.
-      // For now, I'll keep the image generation on client as per existing code, but wrapped in the API call.
-      // Wait, the user asked to move Gemini logic to backend.
-      // I need to update the backend to return the image.
-      // For now, I'll just show the result.
-      alert(data.result);
+
+      // 2. Generate strategy using Gemini
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const fullPrompt = `Tu es l'intelligence artificielle de "Vidan AI", une plateforme experte en stratégie de croissance et optimisation de chaînes YouTube. Ton unique mission est d'aider les créateurs à exploser leur taux de clic (CTR) et leur audience.
+
+Analyse la niche suivante : ${prompt}
+
+Génère une réponse au format JSON suivant :
+{
+  "niche_strategy": "Ton analyse stratégique SEO ici, incluant les mots-clés principaux, l'intention de recherche et les opportunités de croissance",
+  "suggestions": [
+    {
+      "type": "Nom du concept",
+      "visual": "Description précise de ce qu'on doit voir sur l'image",
+      "text_overlay": "Le texte à écrire sur la miniature (3 mots max)",
+      "title_tag": "Le titre optimisé pour le SEO (mots-clés, curiosité)"
+    }
+  ],
+  "design_tips": {
+    "colors": ["Couleur 1", "Couleur 2"],
+    "font_style": "Style de police conseillé"
+  }
+}
+`;
+      const aiResponse = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: fullPrompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
+
+      console.log(aiResponse.text);
+      alert("Analyse SEO Vidan AI générée ! Consultez la console pour voir le résultat.");
     } catch (error) {
       console.error(error);
+      alert("Une erreur est survenue lors de la génération.");
     } finally {
       setLoading(false);
     }

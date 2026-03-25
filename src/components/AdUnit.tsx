@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
 
+declare global {
+  interface Window {
+    adsbygoogle: any;
+  }
+}
+
 export default function AdUnit({ slot }: { slot: string }) {
   useEffect(() => {
     try {

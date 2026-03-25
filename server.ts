@@ -35,6 +35,10 @@ const checkAuth = async (req: any, res: any, next: any) => {
   
   try {
     const parsedTokens = JSON.parse(tokens);
+    if (!parsedTokens.refresh_token) {
+        res.clearCookie('youtube_tokens', { httpOnly: true, secure: true, sameSite: 'none' });
+        return res.status(401).json({ error: 'Refresh token missing, please re-authenticate' });
+    }
     oauth2Client.setCredentials(parsedTokens);
     // On récupère l'ID utilisateur pour Firestore
     const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
@@ -66,14 +70,13 @@ app.post('/api/generate-strategy', checkAuth, async (req: any, res: any) => {
     });
   }
 
-  // LOGIQUE GEMINI ICI...
-  // Une fois la génération réussie :
+  // Usage tracking
   await userRef.set({
     count: userData!.count + 1,
     lastDate: today
   }, { merge: true });
 
-  res.json({ result: "Analyse Vidan AI réussie", remaining: 3 - (userData!.count + 1) });
+  res.json({ remaining: 3 - (userData!.count + 1) });
 });
 
 app.get('/api/auth/url', (req, res) => {
