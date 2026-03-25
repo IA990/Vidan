@@ -104,6 +104,7 @@ export default function CommunityManagement() {
   };
 
   const handleSignOut = async () => {
+    await fetch('/api/logout', { method: 'POST' });
     await signOut(auth);
   };
 

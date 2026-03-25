@@ -4,9 +4,16 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Initialisation Firebase Admin
+// Note: In a real environment, you'd use a service account key or default credentials
+const adminApp = initializeApp();
+const db = getFirestore(adminApp);
 
 const app = express();
 const PORT = 3000;
@@ -21,12 +28,66 @@ const oauth2Client = new google.auth.OAuth2(
   `${process.env.APP_URL}/auth/callback`
 );
 
+// Middleware de protection
+const checkAuth = async (req: any, res: any, next: any) => {
+  const tokens = req.cookies.youtube_tokens;
+  if (!tokens) return res.status(401).json({ error: 'Connexion requise' });
+  
+  try {
+    const parsedTokens = JSON.parse(tokens);
+    oauth2Client.setCredentials(parsedTokens);
+    // On récupère l'ID utilisateur pour Firestore
+    const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+    const channel = await youtube.channels.list({ part: ['id'], mine: true });
+    req.userId = channel.data.items?.[0].id;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Session expirée' });
+  }
+};
+
+// Endpoint avec limite de 3/jour
+app.post('/api/generate-strategy', checkAuth, async (req: any, res: any) => {
+  const userRef = db.collection('usage').doc(req.userId);
+  const doc = await userRef.get();
+  const today = new Date().toDateString();
+
+  let userData = doc.exists ? doc.data() : { count: 0, lastDate: today };
+
+  // Reset si nouvelle journée
+  if (userData!.lastDate !== today) {
+    userData = { count: 0, lastDate: today };
+  }
+
+  if (userData!.count >= 3) {
+    return res.status(429).json({ 
+      error: "Limite atteinte", 
+      message: "Vous avez utilisé vos 3 analyses gratuites du jour." 
+    });
+  }
+
+  // LOGIQUE GEMINI ICI...
+  // Une fois la génération réussie :
+  await userRef.set({
+    count: userData!.count + 1,
+    lastDate: today
+  }, { merge: true });
+
+  res.json({ result: "Analyse Vidan AI réussie", remaining: 3 - (userData!.count + 1) });
+});
+
 app.get('/api/auth/url', (req, res) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: ['https://www.googleapis.com/auth/youtube.readonly'],
+    prompt: 'consent',
   });
   res.json({ url });
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('youtube_tokens', { httpOnly: true, secure: true, sameSite: 'none' });
+  res.json({ message: 'Logged out' });
 });
 
 app.get('/auth/callback', async (req, res) => {
@@ -68,6 +129,7 @@ app.get('/api/channel', async (req, res) => {
     });
     res.json(response.data.items?.[0]);
   } catch (error) {
+    console.error('YouTube API Error:', error);
     res.status(500).send('Failed to fetch channel');
   }
 });

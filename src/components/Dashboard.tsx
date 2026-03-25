@@ -10,6 +10,7 @@ import {
   Area
 } from 'recharts';
 import { searchVideos } from '../services/youtubeService';
+import AdUnit from './AdUnit';
 
 const data = [
   { name: 'Mon', views: 4000, subs: 240 },
@@ -67,25 +68,25 @@ export default function Dashboard({ setActiveTab }: { setActiveTab: React.Dispat
   }, [searchTerm]);
 
   return (
-    <div className="space-y-8">
+    <main className="space-y-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="Statistiques clés">
         <StatCard title="Total Views" value="1.2M" change="+12.5%" icon={Eye} trend="up" />
         <StatCard title="Subscribers" value="45.2K" change="+5.2%" icon={Users} trend="up" />
         <StatCard title="Watch Time" value="12.4K hrs" change="-2.1%" icon={PlayCircle} trend="down" />
         <StatCard title="Avg. CTR" value="8.4%" change="+1.4%" icon={TrendingUp} trend="up" />
-      </div>
+      </section>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white/5 border border-white/10 p-8 rounded-3xl">
-          <div className="flex justify-between items-center mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8" aria-label="Analyses et tendances">
+        <article className="lg:col-span-2 bg-white/5 border border-white/10 p-8 rounded-3xl">
+          <header className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold">Views Over Time</h3>
             <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm outline-none">
               <option>Last 7 Days</option>
               <option>Last 30 Days</option>
             </select>
-          </div>
+          </header>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={data}>
@@ -106,10 +107,10 @@ export default function Dashboard({ setActiveTab }: { setActiveTab: React.Dispat
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </article>
 
-        <div className="bg-white/5 border border-white/10 p-8 rounded-3xl">
-          <div className="flex justify-between items-center mb-8">
+        <article className="bg-white/5 border border-white/10 p-8 rounded-3xl">
+          <header className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold">Trending Topics</h3>
             <input 
               type="text"
@@ -118,7 +119,7 @@ export default function Dashboard({ setActiveTab }: { setActiveTab: React.Dispat
               className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm outline-none focus:ring-1 focus:ring-red-500 w-32"
               placeholder="Search..."
             />
-          </div>
+          </header>
           
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -171,8 +172,12 @@ export default function Dashboard({ setActiveTab }: { setActiveTab: React.Dispat
           <button className="w-full mt-8 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-sm font-medium">
             View All Trends
           </button>
-        </div>
-      </div>
-    </div>
+        </article>
+      </section>
+      
+      <aside className="bg-white/5 border border-white/10 p-8 rounded-3xl" aria-label="Publicité">
+        <AdUnit slot="1234567890" />
+      </aside>
+    </main>
   );
 }
