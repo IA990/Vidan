@@ -72,7 +72,7 @@ export default function App() {
             <Youtube className="w-5 h-5 text-white" />
           </div>
           {isSidebarOpen && (
-            <span className="font-bold text-xl tracking-tight">TubeBuddy <span className="text-red-600">AI</span></span>
+            <span className="font-bold text-xl tracking-tight">Vidan <span className="text-red-600">AI</span></span>
           )}
         </div>
 

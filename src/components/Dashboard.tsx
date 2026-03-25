@@ -160,7 +160,7 @@ export default function Dashboard({ setActiveTab }: { setActiveTab: React.Dispat
                       {video.snippet?.title || "How to grow your YouTube channel in 2024"}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {video.snippet?.channelTitle || "TubeBuddy Academy"}
+                      {video.snippet?.channelTitle || "Vidan Academy"}
                     </p>
                   </div>
                 </div>
